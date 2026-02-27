@@ -34,6 +34,9 @@ import DataBackupSettings from "@/pages/settings/DataBackupSettings";
 import EmailTemplatesSettings from "@/pages/settings/EmailTemplatesSettings";
 import ApiKeysSettings from "@/pages/settings/ApiKeysSettings";
 import IntegrationsSettings from "@/pages/settings/IntegrationsSettings";
+import SecuritySettings from "@/pages/settings/SecuritySettings";
+import TeamPermissionsSettings from "@/pages/settings/TeamPermissionsSettings";
+import OrganizationSettings from "@/pages/settings/OrganizationSettings";
 
 // Attendance Module
 import AttendanceDashboard from "@/pages/attendance/AttendanceDashboard";
@@ -93,6 +96,9 @@ function AppRouter() {
       <Route path="/settings/general" component={GeneralSettings} />
       <Route path="/settings/appearance" component={AppearanceSettings} />
       <Route path="/settings/notifications" component={NotificationsSettings} />
+      <Route path="/settings/security" component={SecuritySettings} />
+      <Route path="/settings/team" component={TeamPermissionsSettings} />
+      <Route path="/settings/organization" component={OrganizationSettings} />
       <Route path="/settings/data" component={DataBackupSettings} />
       <Route path="/settings/email-templates" component={EmailTemplatesSettings} />
       <Route path="/settings/api-keys" component={ApiKeysSettings} />

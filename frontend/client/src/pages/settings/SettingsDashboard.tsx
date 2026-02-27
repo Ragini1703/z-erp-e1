@@ -47,7 +47,7 @@ const settingsSections = [
     description: "Password policy, two-factor auth and session management.",
     icon: Shield,
     path: "/settings/security",
-    badge: "Soon",
+    badge: null,
     color: "text-red-600 bg-red-100",
   },
   {
@@ -55,7 +55,7 @@ const settingsSections = [
     description: "Manage roles, access levels and team member permissions.",
     icon: Users,
     path: "/settings/team",
-    badge: "Soon",
+    badge: null,
     color: "text-blue-600 bg-blue-100",
   },
   {
@@ -87,7 +87,7 @@ const settingsSections = [
     description: "Company profile, logo and contact information.",
     icon: Building2,
     path: "/settings/organization",
-    badge: "Soon",
+    badge: null,
     color: "text-orange-600 bg-orange-100",
   },
   {
@@ -126,11 +126,10 @@ const SettingsDashboard = () => {
 
             const CardEl = (
               <Card
-                className={`group relative transition-all duration-200 border border-slate-200 ${
-                  isAvailable
-                    ? "hover:shadow-md hover:border-indigo-300 cursor-pointer"
-                    : "opacity-60 cursor-default"
-                }`}
+                className={`group relative transition-all duration-200 border border-slate-200 ${isAvailable
+                  ? "hover:shadow-md hover:border-indigo-300 cursor-pointer"
+                  : "opacity-60 cursor-default"
+                  }`}
               >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
