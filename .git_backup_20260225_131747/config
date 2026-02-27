@@ -1,0 +1,13 @@
+[core]
+	repositoryformatversion = 0
+	filemode = false
+	bare = false
+	logallrefupdates = true
+	symlinks = false
+	ignorecase = true
+[remote "origin"]
+	url = https://github.com/Ragini1703/z-erp-e1.git
+	fetch = +refs/heads/ragini-37571aa:refs/remotes/origin/ragini-37571aa
+[branch "ragini-37571aa"]
+	remote = origin
+	merge = refs/heads/ragini-37571aa
