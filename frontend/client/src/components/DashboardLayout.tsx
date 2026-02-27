@@ -35,6 +35,7 @@ import ProfileDropdown from './ProfileDropdown';
 import WorkspaceSelector from './WorkspaceSelector';
 import PageTransition from './PageTransition';
 import TopProgressBar from './TopProgressBar';
+import AttendanceTracker from './AttendanceTracker';
 import { useWorkspace } from '@/contexts/WorkspaceContext';
 import { safeGetItem } from '@/lib/storage';
 import {
@@ -992,53 +993,11 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Check-in Dialog */}
-      <Dialog open={checkInDialogOpen} onOpenChange={setCheckInDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Check In</DialogTitle>
-            <DialogDescription>Record your attendance for today</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="text-center p-6 bg-gradient-to-br from-indigo-50 to-purple-50 rounded-lg">
-              <div className="text-4xl font-bold text-indigo-600">
-                {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-              </div>
-              <p className="text-sm text-gray-600 mt-2">
-                {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
-            </div>
-            <div className="space-y-3">
-              <div>
-                <Label>Check-in Type</Label>
-                <Select defaultValue="office">
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="office">Office</SelectItem>
-                    <SelectItem value="remote">Remote</SelectItem>
-                    <SelectItem value="field">Field</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label>Note (Optional)</Label>
-                <Textarea placeholder="Add a note..." />
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button className="flex-1 bg-green-600 hover:bg-green-700">
-                <LogIn size={16} className="mr-2" />
-                Check In
-              </Button>
-              <Button variant="outline" className="flex-1" onClick={() => setCheckInDialogOpen(false)}>
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Attendance Tracker - Enhanced Check-in/Check-out System */}
+      <AttendanceTracker 
+        open={checkInDialogOpen} 
+        onOpenChange={setCheckInDialogOpen} 
+      />
 
       {/* Add Task Dialog */}
       <Dialog open={taskDialogOpen} onOpenChange={setTaskDialogOpen}>

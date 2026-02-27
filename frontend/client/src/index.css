@@ -11,6 +11,11 @@
     scrollbar-width: none;
   }
 
+  /* Active scale animation for touch feedback */
+  .active\:scale-98:active {
+    transform: scale(0.98);
+  }
+
   /* Custom scrollbar utility classes */
   .scrollbar-thin::-webkit-scrollbar {
     width: 8px;

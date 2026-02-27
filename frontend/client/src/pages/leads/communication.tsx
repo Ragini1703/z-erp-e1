@@ -34,6 +34,7 @@ import {
   PhoneCall, PhoneIncoming, PhoneOutgoing, MailOpen, Save
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import EmailTemplateDialog from "@/components/crm/EmailTemplateDialog";
 
 interface Lead {
   id: string;
@@ -71,8 +72,6 @@ export default function LeadCommunication() {
   
   // Form states
   const [whatsappMessage, setWhatsappMessage] = useState("");
-  const [emailSubject, setEmailSubject] = useState("");
-  const [emailBody, setEmailBody] = useState("");
   const [callNotes, setCallNotes] = useState("");
   const [callDuration, setCallDuration] = useState("");
   const [callDirection, setCallDirection] = useState<"incoming" | "outgoing">("outgoing");
@@ -191,24 +190,13 @@ export default function LeadCommunication() {
   };
 
   // Email Handler
-  const handleSendEmail = async () => {
-    if (!selectedLead || !emailSubject.trim() || !emailBody.trim()) {
-      toast({
-        title: "⚠️ Missing Information",
-        description: "Please select a lead and fill in subject and body.",
-        variant: "destructive",
-        duration: 3000,
-      });
-      return;
-    }
-
-    setIsSending(true);
-    await new Promise(resolve => setTimeout(resolve, 800));
+  const handleSendEmail = async (subject: string, body: string) => {
+    if (!selectedLead) return;
 
     // Create mailto link
-    const subject = encodeURIComponent(emailSubject);
-    const body = encodeURIComponent(emailBody);
-    const mailtoUrl = `mailto:${selectedLead.email}?subject=${subject}&body=${body}`;
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    const mailtoUrl = `mailto:${selectedLead.email}?subject=${encodedSubject}&body=${encodedBody}`;
     
     // Open email client
     window.location.href = mailtoUrl;
@@ -220,8 +208,8 @@ export default function LeadCommunication() {
       leadName: `${selectedLead.name} - ${selectedLead.company}`,
       type: "email",
       status: "success",
-      subject: emailSubject,
-      message: emailBody,
+      subject: subject,
+      message: body,
       timestamp: "Just now",
       createdBy: "Current User"
     };
@@ -234,10 +222,7 @@ export default function LeadCommunication() {
       duration: 3000,
     });
 
-    setEmailSubject("");
-    setEmailBody("");
     setEmailDialogOpen(false);
-    setIsSending(false);
   };
 
   // Call Handler
@@ -706,119 +691,17 @@ export default function LeadCommunication() {
           </DialogContent>
         </Dialog>
 
-        {/* Email Dialog */}
-        <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-          <DialogContent className="sm:max-w-[700px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Mail className="w-5 h-5 text-blue-600" />
-                Compose Email
-              </DialogTitle>
-              <DialogDescription>
-                {selectedLead && `Send an email to ${selectedLead.name}`}
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4 py-4">
-              {selectedLead && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="w-4 h-4 text-blue-600" />
-                    <span className="font-medium">{selectedLead.email}</span>
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-2">
-                <Label htmlFor="email-subject">Subject</Label>
-                <Input
-                  id="email-subject"
-                  placeholder="Enter email subject..."
-                  value={emailSubject}
-                  onChange={(e) => setEmailSubject(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email-body">Message</Label>
-                <Textarea
-                  id="email-body"
-                  placeholder="Enter email body..."
-                  value={emailBody}
-                  onChange={(e) => setEmailBody(e.target.value)}
-                  rows={8}
-                  className="resize-none"
-                />
-              </div>
-
-              {/* Email Templates */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium">Quick Templates:</p>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEmailSubject("Follow-up on Our Discussion");
-                      setEmailBody("Hi,\n\nI wanted to follow up on our recent conversation about [topic]. I believe our solution can help you achieve [benefit].\n\nWould you be available for a brief call this week to discuss next steps?\n\nBest regards");
-                    }}
-                    className="text-xs"
-                  >
-                    Follow-up
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEmailSubject("Pricing Proposal - [Your Company]");
-                      setEmailBody("Hi,\n\nThank you for your interest in our services. I've prepared a customized pricing proposal based on your requirements.\n\nPlease find the attached proposal. I'm happy to discuss any questions you may have.\n\nBest regards");
-                    }}
-                    className="text-xs"
-                  >
-                    Pricing Proposal
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEmailSubject("Product Demo Invitation");
-                      setEmailBody("Hi,\n\nI'd like to invite you to a personalized demo of our platform. This will give you a hands-on look at how we can help solve [pain point].\n\nPlease let me know your availability for a 30-minute demo call.\n\nLooking forward to connecting!\n\nBest regards");
-                    }}
-                    className="text-xs"
-                  >
-                    Demo Invite
-                  </Button>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setEmailDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={handleSendEmail}
-                disabled={isSending}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isSending ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Opening Email...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Open Email Client
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        {/* Email Dialog - Enhanced Template */}
+        {selectedLead && (
+          <EmailTemplateDialog
+            open={emailDialogOpen}
+            onOpenChange={setEmailDialogOpen}
+            leadName={selectedLead.name}
+            leadEmail={selectedLead.email}
+            leadCompany={selectedLead.company}
+            onSend={handleSendEmail}
+          />
+        )}
 
         {/* Call Dialog */}
         <Dialog open={callDialogOpen} onOpenChange={setCallDialogOpen}>

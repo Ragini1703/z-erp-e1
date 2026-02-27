@@ -50,6 +50,7 @@ import {
   History, Loader2, Save, ExternalLink, ArrowRight
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import EmailTemplateDialog from "@/components/crm/EmailTemplateDialog";
 
 // Proposal status type
 type ProposalStatus = "Draft" | "Sent" | "Viewed" | "Accepted" | "Rejected" | "Expired";
@@ -230,6 +231,7 @@ export default function LeadProposals() {
   const [sendDialogOpen, setSendDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [convertDialogOpen, setConvertDialogOpen] = useState(false);
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<ProposalStatus | "All">("All");
   const [isLoading, setIsLoading] = useState(false);
@@ -361,6 +363,14 @@ export default function LeadProposals() {
   const handleSendProposal = async (method: "email" | "whatsapp") => {
     if (!selectedProposal) return;
 
+    // For email, open the enhanced email template dialog
+    if (method === "email") {
+      setSendDialogOpen(false);
+      setEmailDialogOpen(true);
+      return;
+    }
+
+    // For WhatsApp, proceed with the original logic
     setIsLoading(true);
     await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -385,18 +395,49 @@ export default function LeadProposals() {
     setIsLoading(false);
     setSendDialogOpen(false);
 
-    // Simulate sending
-    if (method === "email") {
-      window.open(`mailto:${selectedProposal.leadEmail}?subject=Proposal: ${selectedProposal.title}&body=Please find attached the proposal for your review.`);
-    } else {
-      const message = `Hi ${selectedProposal.leadName}, Please review our proposal: ${selectedProposal.title}. Total: ${formatCurrency(selectedProposal.total)}`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
-    }
+    // Send via WhatsApp
+    const message = `Hi ${selectedProposal.leadName}, Please review our proposal: ${selectedProposal.title}. Total: ${formatCurrency(selectedProposal.total)}`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
 
     toast({
       title: "Proposal Sent",
       description: `Proposal sent via ${method}`,
     });
+  };
+
+  // Handle email send from template dialog
+  const handleEmailSend = (subject: string, body: string) => {
+    if (!selectedProposal) return;
+
+    // Update proposal status
+    setProposals(proposals.map(p => 
+      p.id === selectedProposal.id 
+        ? { ...p, status: "Sent", sentDate: new Date() }
+        : p
+    ));
+
+    // Add to history
+    const historyEntry: ProposalHistory = {
+      id: `PH${String(proposalHistory.length + 1).padStart(3, '0')}`,
+      proposalId: selectedProposal.id,
+      action: "Sent",
+      description: `Proposal sent via email: ${subject}`,
+      performedBy: "Current User",
+      performedAt: new Date(),
+    };
+    setProposalHistory([historyEntry, ...proposalHistory]);
+
+    // Open email client
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    window.location.href = `mailto:${selectedProposal.leadEmail}?subject=${encodedSubject}&body=${encodedBody}`;
+
+    toast({
+      title: "Proposal Email Ready",
+      description: `Email draft opened for ${selectedProposal.leadName}`,
+    });
+
+    setEmailDialogOpen(false);
   };
 
   // Update proposal status
@@ -1453,6 +1494,18 @@ export default function LeadProposals() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Enhanced Email Template Dialog */}
+        {selectedProposal && (
+          <EmailTemplateDialog
+            open={emailDialogOpen}
+            onOpenChange={setEmailDialogOpen}
+            leadName={selectedProposal.leadName}
+            leadEmail={selectedProposal.leadEmail}
+            leadCompany={selectedProposal.company}
+            onSend={handleEmailSend}
+          />
+        )}
       </div>
     </DashboardLayout>
   );

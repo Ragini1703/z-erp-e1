@@ -70,6 +70,7 @@ import {
 import WorkflowGuide from "@/components/crm/WorkflowGuide";
 import QuickActionsPanel from "@/components/crm/QuickActionsPanel";
 import LeadJourney from "@/components/crm/LeadJourney";
+import EmailTemplateDialog from "@/components/crm/EmailTemplateDialog";
 import {
   LeadStatus,
   LEAD_STATUS_CONFIG,
@@ -227,6 +228,7 @@ export default function LeadsModule() {
   const [addLeadModalOpen, setAddLeadModalOpen] = useState(false);
   const [activeDetailTab, setActiveDetailTab] = useState("overview");
   const [showWorkflowGuide, setShowWorkflowGuide] = useState(false);
+  const [emailDialogLead, setEmailDialogLead] = useState<Lead | null>(null);
   
   // Filter states
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -917,7 +919,7 @@ export default function LeadsModule() {
 
   const handleEmail = (lead: Lead, e?: React.MouseEvent) => {
     e?.stopPropagation();
-    console.log("📧 Composing email to:", lead.name, lead.email);
+    console.log("📧 Opening email template for:", lead.name, lead.email);
     
     if (!lead.email) {
       toast({
@@ -929,15 +931,22 @@ export default function LeadsModule() {
       return;
     }
 
+    // Open the enhanced email template dialog
+    setEmailDialogLead(lead);
+  };
+
+  const handleSendEmail = (subject: string, body: string) => {
+    if (!emailDialogLead) return;
+
     toast({
-      title: "✉️ Opening Email",
-      description: `Composing email to ${lead.name}...`,
+      title: "✉️ Opening Email Client",
+      description: `Email draft ready for ${emailDialogLead.name}...`,
       duration: 3000,
     });
 
     // Add activity
     setLeads(prev => prev.map(l => {
-      if (l.id === lead.id) {
+      if (l.id === emailDialogLead.id) {
         return {
           ...l,
           lastContact: "Just now",
@@ -945,7 +954,7 @@ export default function LeadsModule() {
             id: String(Date.now()),
             type: "email" as const,
             title: "Email Sent",
-            description: `Email sent to ${lead.email}`,
+            description: `Email sent: ${subject}`,
             timestamp: "Just now",
             user: "Current User"
           }, ...(l.activities || [])]
@@ -955,9 +964,12 @@ export default function LeadsModule() {
     }));
 
     // Open email client with pre-filled data
-    const subject = encodeURIComponent(`Following up - ${lead.company || 'Your Inquiry'}`);
-    const body = encodeURIComponent(`Hi ${lead.name.split(' ')[0]},\n\nI wanted to follow up with you regarding...`);
-    window.location.href = `mailto:${lead.email}?subject=${subject}&body=${body}`;
+    const encodedSubject = encodeURIComponent(subject);
+    const encodedBody = encodeURIComponent(body);
+    window.location.href = `mailto:${emailDialogLead.email}?subject=${encodedSubject}&body=${encodedBody}`;
+
+    // Close dialog
+    setEmailDialogLead(null);
   };
 
   const handleWhatsApp = (lead: Lead, e?: React.MouseEvent) => {
@@ -3073,6 +3085,18 @@ export default function LeadsModule() {
             setShowWorkflowGuide(false);
             openAddLeadModal();
           }}
+        />
+      )}
+
+      {/* Enhanced Email Template Dialog */}
+      {emailDialogLead && (
+        <EmailTemplateDialog
+          open={emailDialogLead !== null}
+          onOpenChange={(open) => !open && setEmailDialogLead(null)}
+          leadName={emailDialogLead.name}
+          leadEmail={emailDialogLead.email}
+          leadCompany={emailDialogLead.company}
+          onSend={handleSendEmail}
         />
       )}
     </DashboardLayout>
